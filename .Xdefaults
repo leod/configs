@@ -1,0 +1,17 @@
+Xft.antialias: 1
+Xft.hinting: 1
+Xft.hintstyle: hintfull
+Xft.rgba: rgb
+
+urxvt.perl-lib: /home/leod/.urxvt
+urxvt*termName: rxvt
+urxvt*perl-ext-common:default,matcher,clipboard
+urxvt*keysym.C-u: perl:mark-yank-urls:activate_mark_mode
+urxvt*perl-ext: selection,mark-yank-urls
+urxvt*background: black
+urxvt*foreground: grey
+urxvt*scrollBar: false
+urxvt.font: -misc-proggycleanttsz-medium-r-normal--0-0-0-0-c-0-iso8859-1
+urxvt*urlLauncher: firefox
+urxvt*underlineURLs: true
+urxvt.urgentOnBell: true
