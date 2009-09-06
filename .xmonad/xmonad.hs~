@@ -1,0 +1,50 @@
+import XMonad
+import qualified XMonad.StackSet as W
+import XMonad.Util.EZConfig
+import XMonad.Util.Run
+import XMonad.Hooks.DynamicLog
+import XMonad.Hooks.ManageDocks
+import XMonad.Layout.NoBorders
+import System.IO
+
+myWorkspaces = ["web", "im", "term", "prog", "music", "stuff"]
+
+associate :: WorkspaceId -> String -> ManageHook
+associate area wmClass = className =? wmClass --> doShift area
+
+myManageHook :: [ManageHook]
+myManageHook =
+    [ associate "Amerokapp" "music"
+    , associate "Opera" "web"
+    , associate "Pidgin" "im"
+    , className =? "MPlayer" --> doFloat
+    ]
+
+main = do 
+    xmproc <- spawnPipe "xmobar"
+    xmonad $ defaultConfig
+            {
+              terminal = "urxvt -bg black -fg grey -fn \"xft:Bitstream Vera Sans Mono\" +sb"
+            , focusedBorderColor = "#0000ff"
+            , workspaces = myWorkspaces
+            , manageHook = manageDocks <+> manageHook defaultConfig <+> composeAll myManageHook
+            , layoutHook = smartBorders $ avoidStruts $ layoutHook defaultConfig
+            , logHook = dynamicLogWithPP $ xmobarPP
+                          { ppOutput = hPutStrLn xmproc
+                          , ppTitle = xmobarColor "green" "" . shorten 100 
+                          }
+            , modMask = mod4Mask
+            } `additionalKeys`
+            [ ((0, 0x1008ff11), spawn "amixer set Master 1dB-")
+            , ((0, 0x1008ff12), spawn "amixer set Master toggle")
+            , ((0, 0x1008ff13), spawn "amixer set Master 1dB+")
+            , ((0, 0x1008ff14), spawn "dbus-send --type=method_call --dest=org.kde.amarok /Player org.freedesktop.MediaPlayer.Pause")
+            , ((0, 0x1008ff15), spawn "dbus-send --type=method_call --dest=org.kde.amarok /Player org.freedesktop.MediaPlayer.Stop")
+            , ((0, 0x1008ff16), spawn "dbus-send --type=method_call --dest=org.kde.amarok /Player org.freedesktop.MediaPlayer.Prev")
+            , ((0, 0x1008ff17), spawn "dbus-send --type=method_call --dest=org.kde.amarok /Player org.freedesktop.MediaPlayer.Next")
+            ] `additionalKeysP` 
+            [ (otherModMasks ++ "M-" ++ [key], action tag)
+              | (tag, key) <- zip myWorkspaces "123456789"
+              , (otherModMasks, action) <- [ ("", windows . W.view)
+                                           , ("S-", windows . W.shift)]
+            ]
