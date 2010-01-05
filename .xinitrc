@@ -17,4 +17,6 @@ xscreensaver -no-splash &
 
 xmodmap ~/.Xmodmap
 
+scrobby
+
 exec xmonad
