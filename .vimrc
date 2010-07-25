@@ -8,6 +8,31 @@
 "noremap  <Right> ""
 "noremap! <Right> <Esc>
 
+" Colemak
+noremap n j
+noremap e k
+noremap i l
+xnoremap n j
+xnoremap e k
+xnoremap i l
+onoremap n j
+onoremap e k
+onoremap i l
+
+noremap l u
+noremap L U
+noremap u i
+noremap U I
+
+noremap k n
+noremap K N
+
+noremap <C-t> <C-f>
+
+noremap <C-w>n <C-w>j
+noremap <C-w>e <C-w>k
+noremap <C-w>i <C-w>l
+
 " Line numbers
 set number
 noremap <F2> :set nonumber!<CR>:set foldcolumn=0<CR>
@@ -20,7 +45,7 @@ set tabstop=4
 set shiftwidth=4
 set encoding=utf8
 
-colorscheme xoria256
+colorscheme zenburn
 
 au BufEnter *.pas set expandtab
 
@@ -56,5 +81,4 @@ map <F5> :call Compile()<CR>
 
 func! Compile()
 	exec "wa"
-
 endfunc
