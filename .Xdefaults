@@ -11,7 +11,8 @@ urxvt*perl-ext: selection,mark-yank-urls
 urxvt*background: black
 urxvt*foreground: grey
 urxvt*scrollBar: false
-urxvt.font: -misc-proggycleanttsz-medium-r-normal--0-0-0-0-c-0-iso8859-1
+#urxvt.font: -misc-proggycleanttsz-medium-r-normal--0-0-0-0-c-0-iso8859-1
+urxvt*font: xft:DejaVu Sans Mono
 urxvt*urlLauncher: firefox
 urxvt*underlineURLs: true
 urxvt.urgentOnBell: true

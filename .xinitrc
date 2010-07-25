@@ -12,10 +12,12 @@
 xrdb -merge .Xresources
 xsetroot -cursor_name left_ptr
 xsetroot -solid midnightblue
+nitrogen --restore
 
 xscreensaver -no-splash &
 
 xmodmap ~/.Xmodmap
+setxkbmap us -variant colemak
 
 scrobby
 
