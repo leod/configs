@@ -3,6 +3,7 @@ import Data.Ratio
 import qualified Data.Map as M
 import System.IO
 import System.Exit
+import Control.Monad ((<=<))
 
 import XMonad
 import qualified XMonad.StackSet as W
@@ -20,25 +21,30 @@ import XMonad.Layout.HintedTile
 import XMonad.Layout.Spiral
 import XMonad.Layout.PerWorkspace
 import XMonad.Layout.WorkspaceDir
+import XMonad.Layout.IM
+import XMonad.Layout.Reflect
 import XMonad.Actions.MouseGestures
 import XMonad.Actions.CycleWS
+import XMonad.Actions.SpawnOn
 import XMonad.Actions.WindowBringer
+import XMonad.Actions.TopicSpace
+import XMonad.Actions.GridSelect
 import XMonad.Util.Scratchpad
 import XMonad.Prompt
 import XMonad.Prompt.Shell
+import XMonad.Prompt.Workspace
 
-myConf = defaultConfig
+myConf sp = defaultConfig
             {
               terminal = "urxvt"
             , focusedBorderColor = "#aa0000"
             , normalBorderColor = "#333333"
-            , workspaces = myWorkspaces
+            , workspaces = myTopics
             , keys = myKeys
-            , manageHook = manageDocks <+> manageHook defaultConfig <+> composeAll myManageHook
+            , manageHook = manageSpawn sp <+> manageDocks <+> manageHook defaultConfig <+> composeAll myManageHook
             , layoutHook = myLayoutHook
             , modMask = myModMask
             }
-            `additionalKeys` myAddKeys
 
 myModMask = mod4Mask
 
@@ -53,32 +59,86 @@ myManageHook = concat $
         myFloats = ["MPlayer", "VLC media player" {- "Steam"-}]
 
 myLayoutHook =
-    workspaceDir "~" $ smartBorders $ avoidStruts $ layoutHook defaultConfig
+    onWorkspace "gimp" gimp $
+    workspaceDir "~" $
+    smartBorders $ avoidStruts $ layoutHook defaultConfig
 
-myWorkspaces = ["1", "2", "3", "4",
-                "5", "6", "7", "8",
-                "9", "0"]
+    where
+        gimp = withIM (0.11) (Role "gimp-toolbox") $
+               reflectHoriz $
+               withIM (0.15) (Role "gimp-dock") Full
+
+myTopics = [ "web", "im", "dev", "admin"
+           , "movie", "music", "mail", "dash"
+           , "reading", "school", "defend"
+           , "gaming", "gimp", "torrent" 
+           ]
+
+myTopicConfig sp = TopicConfig
+    { topicDirs = M.fromList $
+        [ ("torrent", "/mnt/media/dl"),
+          ("music", "~/share/music"),
+          ("dev", "~/dev"),
+          ("movie", "/mnt/media/tv"),
+          ("school", "~/school"),
+          ("defend", "~/dev/defend"),
+          ("gaming", "~/.wine/drive_c/Program\\ Files")
+        ]
+    , defaultTopicAction = const $ spawnShell sp
+    , defaultTopic = "web"
+    , maxTopicHistory = 10
+    , topicActions = M.fromList $
+        [ ("web", spawnOn sp "web" "firefox")
+        , ("music", spawnOn sp "music" "sonata")
+        , ("mail", spawnOn sp "mail" "thunderbird")
+        , ("im", spawnOn sp "im" "pidgin" >> spawnOn sp "im" "urxvt -e ssh orion")
+        , ("pdf", spawnOn sp "pdf" "okular")
+        , ("gimp", spawnOn sp "gimp" "gimp")
+       ]
+    }
+
+spawnShell sp = currentTopicDir (myTopicConfig sp) >>= spawnShellIn sp
+
+spawnShellIn sp dir= do
+    t <- asks (terminal . config)
+    spawnHere sp $ "cd " ++ dir ++ " && " ++ t
 
 associate :: WorkspaceId -> String -> ManageHook
 associate area wmClass = className =? wmClass --> doShift area
 
 main = do 
     xmproc <- spawnPipe "xmobar"
-    xmonad $ withUrgencyHook NoUrgencyHook myConf
-          {
-            logHook = dynamicLogWithPP $ xmobarPP
-                              { 
-                                ppOutput = hPutStrLn xmproc
-                              , ppTitle = xmobarColor "green" "" . shorten 100 
-                              , ppSep = " | "
-                              , ppLayout = id
-                              , ppUrgent = xmobarColor "grey" "red" . wrap "!" "!" . xmobarStrip
-                              }
-          }
+    sp <- mkSpawner
+    xmonad $ withUrgencyHook NoUrgencyHook (myConf sp)
+        { logHook = {-io . hPutStrLn xmproc =<< (XMonad.Actions.TopicSpace.pprWindowSet (myTopicConfig sp)-} dynamicLogWithPP
+              xmobarPP
+              { ppOutput = hPutStrLn xmproc
+              , ppTitle = xmobarColor "green" "" . shorten 100 
+              , ppSep = " | "
+              , ppLayout = id
+              , ppUrgent = xmobarColor "grey" "red" . wrap "!" "!" . xmobarStrip
+              }
+        } `additionalKeys` myAddKeys sp
 
 myXPConfig = defaultXPConfig
 
-myAddKeys =  
+gsConfig = defaultGSConfig { gs_navigate = hnei `M.union` gs_navigate (defaultGSConfig `asTypeOf` gsConfig) }
+    where
+        hnei = M.insert (0, xK_space) (const (0, 0)) $ M.map (\(x, y) (a, b) -> (x + a, y + b)) $ M.fromList
+               [ ((0, xK_h), (-1, 0))
+               , ((0, xK_n), ( 0, 1))
+               , ((0, xK_i), ( 1, 0))
+               , ((0, xK_e), ( 0,-1))
+               ]
+
+wsgrid = gridselect gsConfig <=< asks $ map (\x -> (x,x)) . workspaces . config
+
+goto sp = switchTopic (myTopicConfig sp)
+
+--promptedGoto sp = wsgrid >>= flip whenJust (goto sp)
+promptedGoto sp = workspacePrompt myXPConfig $ goto sp
+
+myAddKeys sp =  
     [ ((0, 0x1008ff2e), spawn "amixer -q set Master 5-")
     , ((0, 0x1008ff12), spawn "amixer set Front toggle")
     , ((myModMask, 0x1008ff2e), spawn "amixer -q set Master 5+")
@@ -97,7 +157,19 @@ myAddKeys =
 
     , ((myModMask, xK_p), shellPrompt myXPConfig)
     , ((myModMask .|. shiftMask, xK_d), changeDir myXPConfig)
+    
+    -- Topics
+    , ((myModMask, xK_t), promptedGoto sp)
+    , ((myModMask .|. shiftMask, xK_t), workspacePrompt myXPConfig $ windows . W.shift)
+    , ((myModMask, xK_a), currentTopicAction (myTopicConfig sp))
     ]
+    {-++
+    [ ((myModMask, k), switchNthLastFocused (myTopicConfig sp) i)
+    | (i, k) <- zip [1..] [xK_1 .. xK_9] ]-}
+    {-++
+    [ ((myModMask .|. m, k), f topic)
+    | (topic, k) <- [("web", xK_l), ("im", xK_u), ("dev", xK_y), ("music", xK_semicolon)]
+    , (f, m) <- [(switchTopic (myTopicConfig sp), 0), (windows . W.shift, shiftMask)]] -}
 
 -- Colemak
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
