@@ -11,19 +11,19 @@ urxvt*perl-ext: selection,mark-yank-urls
 urxvt*background: black
 urxvt*foreground: grey
 urxvt*scrollBar: false
-#urxvt.font: -misc-proggycleanttsz-medium-r-normal--0-0-0-0-c-0-iso8859-1
+! urxvt.font: -misc-proggycleanttsz-medium-r-normal--0-0-0-0-c-0-iso8859-1
 urxvt*font: xft:DejaVu Sans Mono
-#urxvt*font: xft:Inconsolata:antialias=true:hinting=true
-#urxvt*boldFont: xft:Inconsolata:antialias=true:hinting=true
-#urxvt*font: xft:Monospace:pixelsize=12
-#urxvt*boldFont: xft:Monospace:bold:pixelsize=12
+! urxvt*font: xft:Inconsolata:antialias=true:hinting=true
+! urxvt*boldFont: xft:Inconsolata:antialias=true:hinting=true
+! urxvt*font: xft:Monospace:pixelsize=12
+! urxvt*boldFont: xft:Monospace:bold:pixelsize=12
 
 urxvt*urlLauncher: firefox
 urxvt*underlineURLs: true
 urxvt.urgentOnBell: true
 
-urxvt*background: #2B2B2B
-urxvt*foreground: #DEDEDE
+! urxvt*background: #2B2B2B
+! urxvt*foreground: #DEDEDE
 
 
 ! black
