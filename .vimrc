@@ -8,37 +8,12 @@
 "noremap  <Right> ""
 "noremap! <Right> <Esc>
 
-" Colemak
-noremap n j
-noremap e k
-noremap i l
-xnoremap n j
-xnoremap e k
-xnoremap i l
-onoremap n j
-onoremap e k
-onoremap i l
-
-noremap l u
-noremap L U
-noremap u i
-noremap U I
-
-noremap k n
-noremap K N
-
-noremap <C-t> <C-f>
-
-noremap <C-w>n <C-w>j
-noremap <C-w>e <C-w>k
-noremap <C-w>i <C-w>l
-
 " Line numbers
 set number
 noremap <F2> :set nonumber!<CR>:set foldcolumn=0<CR>
 
 " Highlight current line
-"set cursorline
+set cursorline
 
 set smartindent
 set tabstop=4
@@ -47,10 +22,8 @@ set encoding=utf8
 
 colorscheme zenburn
 
-au BufEnter *.pas set expandtab
-
-au BufEnter *.hs set expandtab
-"au BufEnter *.hs compiler ghc
+set expandtab
+set expandtab
 
 map ,d :execute 'NERDTreeToggle ' . getcwd()<CR>
 
@@ -76,9 +49,3 @@ nnoremap <silent> <Leader>l
     \   let w:m1=matchadd('ErrorMsg', '\%>80v.\+', -1) <Bar>
     \   let w:m2=matchadd('ErrorMsg', '^\s\+$', -1) <Bar>
     \ endif <CR>
-
-map <F5> :call Compile()<CR>
-
-func! Compile()
-	exec "wa"
-endfunc
