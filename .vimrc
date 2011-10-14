@@ -20,7 +20,7 @@ set tabstop=4
 set shiftwidth=4
 set encoding=utf8
 
-colorscheme zenburn
+colorscheme mayansmoke
 
 set expandtab
 set expandtab
