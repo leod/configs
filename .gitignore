@@ -1,0 +1,4 @@
+*.o
+*.errors
+*.hi
+*.swp
