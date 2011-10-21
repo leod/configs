@@ -1,20 +1,35 @@
-Config { font = "xft:DejaVu Sans Mono"
+Config { font = "xft:DejaVu Sans Mono-11"
        , bgColor = "black"
        , fgColor = "grey"
        , position = Bottom
        , lowerOnStart = True
-       , commands = [ Run Network "wlan0" ["-t", "<rx>KB/<tx>KB"] 10
-                    , Run Wireless "wlan0" ["-t", "<quality>%"] 10
-                    , Run Cpu ["-L","3","-H","50","--normal","green","--high","red"] 10
-                    , Run Memory ["-t","Mem: <usedratio>%"] 10
-                    , Run Swap [] 10
-                    , Run Com "uname" ["-s","-r"] "" 36000
+       , commands = [ Run Network "wlan0" ["-t", "<rx>KB/s:<tx>KB/s"] 20
+                    , Run Wireless "wlan0" ["-t", "<essid>: <quality>%",
+                                            "-L", "30", "-H", "75",
+                                            "-l", "red", "-n", "gray90", "-h", "green"]
+                                           50
+                    , Run Cpu ["-L", "3", "-H", "50",
+                               "-l", "lightblue", "-n", "gray90", "-h", "red"]
+                              20
+                    , Run Memory ["-t", "Mem: <usedratio>%",
+                                  "-L", "20", "-H", "75",
+                                  "-l", "lightblue", "-n", "gray90", "-h", "red"]
+                                 30
                     , Run Date "%a %b %_d %Y %H:%M:%S" "date" 10
                     , Run StdinReader
-                    , Run CoreTemp ["-t","Temp: <core0>|<core1>|<core2>|<core3>","-L","40","-H","60","-l","lightblue","-n","gray90","-h","red"] 50
-                    , Run Battery ["-t", "Batt: <left>% / <timeleft>"] 100
+                    , Run CoreTemp ["-t","Temp: <core0>",
+                                    "-L", "55", "-H", "65", "-l", "lightblue",
+                                    "-n", "gray90", "-h", "red"] 
+                                   50
+                    , Run BatteryP ["BAT0"]
+                                   ["-t", "Batt: <left>% (<timeleft>)",
+                                   "-L", "10", "-H", "80", "-l", "red", "-h", "green", "-n", "gray90",
+                                   "--",
+                                   "-f", "ADP0/online"]
+                                   100
+                    , Run CpuFreq ["-t", "Freq: <cpu0>,<cpu1>,<cpu2>,<cpu3>"] 50
                     ]
        , sepChar = "%"
        , alignSep = "}{"
-       , template = "%StdinReader% }{ %cpu% | %memory% | %wlan0%, %wlan0wi% | %battery% | <fc=#ee9a00>%date%</fc>"
+       , template = "%StdinReader% }{ %cpu% | %memory% | %coretemp% | %wlan0wi%, %wlan0% | %battery% | <fc=#ee9a00>%date%</fc>"
        }
